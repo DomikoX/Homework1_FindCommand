@@ -6,18 +6,16 @@ namespace FindCommand
     public class Find
     {
         public Options Options { get; set; }
-        public DirectoryInfo Root { get; set; }
 
         public Find(Options options)
         {
             Options = options;
-            Root = new DirectoryInfo(Directory.GetCurrentDirectory());
         }
 
         public void Execute()
         {
             string ret = "";
-            Search(Root, ref ret);
+            Search(Options.Root, ref ret);
             Console.WriteLine(ret);
         }
 
@@ -63,7 +61,7 @@ namespace FindCommand
         private string GetRightDirectoryPath(FileSystemInfo fsi)
         {
             var path = fsi is DirectoryInfo ? ((DirectoryInfo) fsi).Parent?.FullName : ((FileInfo) fsi).DirectoryName;
-            return path?.Replace(Root.FullName, ".");
+            return path?.Replace(Options.Root.FullName, ".");
         }
 
         private bool CheckByConditions(FileSystemInfo dir)

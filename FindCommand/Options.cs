@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.Design.Serialization;
 using System.IO;
 
 namespace FindCommand
@@ -9,6 +10,7 @@ namespace FindCommand
         public int? Mtime { get; set; } = null;
         public string Type { get; set; } = null;
         public string Name { get; set; } = null;
+        public DirectoryInfo Root { get; set; } = new DirectoryInfo(Directory.GetCurrentDirectory());
         public List<Condtion> Condtions;
 
         public delegate bool Condtion(FileSystemInfo fileOrDir);
@@ -23,8 +25,15 @@ namespace FindCommand
         {
             foreach (var arg in args)
             {
-                if (string.IsNullOrEmpty(arg) || !arg.StartsWith("-"))
-                    throw new ArgumentException($"{arg} is no valid argument");
+                if (!arg.StartsWith("-"))
+                {
+                    if (!Directory.Exists(arg))
+                    {
+                        throw new ArgumentException($"{arg} is no valid directory path, or directory do not exist");
+                    }
+                    Root = new DirectoryInfo(arg);
+                    continue;
+                }
                 var equalIndex = arg.IndexOf('=');
                 if (equalIndex < 0)
                     throw new ArgumentException($"argument {arg} does not contains =. Right usage: -ARGUMENT=VALUE");
@@ -54,6 +63,7 @@ namespace FindCommand
             }
         }
 
+
         private List<Condtion> CreateConditions()
         {
             var conditions = new List<Condtion>();
@@ -73,13 +83,9 @@ namespace FindCommand
 
             if (Mtime != null)
             {
-                conditions.Add((info) => info.LastWriteTime > DateTime.Now.AddDays(-(double)Mtime));
+                conditions.Add((info) => info.LastWriteTime > DateTime.Now.AddDays(-(double) Mtime));
             }
             return conditions;
         }
-
-
-
-
     }
 }
